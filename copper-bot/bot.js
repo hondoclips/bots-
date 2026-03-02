@@ -180,23 +180,11 @@ async function sendStatusUpdate(price) {
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';
 
-    // Scale real price data for chart with detail variations like SOL bot
-    const minPrice = Math.min(...validPrices);
-    const maxPrice = Math.max(...validPrices);
-    const range = maxPrice - minPrice;
-
-    const scaledData = validPrices.map((p, i) => {
-      const normalized = (p - minPrice) / range;
-      const variation = Math.sin(i * 0.18) * 18 + Math.sin(i * 0.45) * 12 + Math.sin(i * 0.1) * 9 + Math.sin(i * 0.7) * 6;
-      const scaled = 5 + (normalized * 90) + variation;
-      return Math.max(0, Math.min(100, scaled)).toFixed(1);
-    });
-
-    const chartData = scaledData.join(',');
+    const chartData = validPrices.map(p => p.toFixed(4)).join(',');
     const lineColor = priceChange >= 0 ? '4caf50' : 'FF1919';
 
-    const titleText = `$${currentPrice.toFixed(2)}                    |                    ${arrow} ${Math.abs(percentChange)}%`;
-    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=t:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,56,1`;
+    const titleText = `$${currentPrice.toFixed(4)}|${arrow} ${Math.abs(percentChange)}%`;
+    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=a:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,70,1`;
 
     const message = {
       username: 'Copper-bot',

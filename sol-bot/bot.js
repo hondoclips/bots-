@@ -191,11 +191,7 @@ async function sendStatusUpdate(price) {
     const ohlcData = await ohlcResponse.json();
 
     const candles = ohlcData.result.SOLUSD.slice(-288); // Last 288 5-min candles = 24h
-    const prices = [];
-
-    candles.forEach(c => {
-      prices.push(parseFloat(c[4]).toFixed(2)); // close price
-    });
+    const prices = candles.map(c => parseFloat(c[4]).toFixed(2)); // close prices
 
     // Calculate 24h change
     const price24hAgo = parseFloat(prices[0]);
@@ -203,23 +199,11 @@ async function sendStatusUpdate(price) {
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';
 
-    // Scale data for chart with detail variations (like 12:25 AM chart)
-    const minPrice = Math.min(...prices.map(p => parseFloat(p)));
-    const maxPrice = Math.max(...prices.map(p => parseFloat(p)));
-    const range = maxPrice - minPrice;
-
-    const scaledData = prices.map((p, i) => {
-      const normalized = (parseFloat(p) - minPrice) / range;
-      const variation = Math.sin(i * 0.18) * 18 + Math.sin(i * 0.45) * 12 + Math.sin(i * 0.1) * 9 + Math.sin(i * 0.7) * 6;
-      const scaled = 5 + (normalized * 90) + variation;
-      return Math.max(0, Math.min(100, scaled)).toFixed(1);
-    });
-
-    const chartData = scaledData.join(',');
     const lineColor = priceChange >= 0 ? '4caf50' : 'FF1919';
+    const chartData = prices.join(',');
 
-    const titleText = `$${price.toFixed(2)}                    |                    ${arrow} ${Math.abs(percentChange)}%`;
-    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=t:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,56,1`;
+    const titleText = `$${price.toFixed(2)}|${arrow} ${Math.abs(percentChange)}%`;
+    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=a:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,70,1`;
 
     const message = {
       embeds: [{
