@@ -271,26 +271,24 @@ function getNextMountainUpdate() {
   // Mountain Time = UTC-7, so 12 PM MT = 19:00 UTC, 12 AM MT = 07:00 UTC
   const currentUTCHour = now.getUTCHours();
 
-  if (currentUTCHour < 7) {
-    // Next is 7 AM UTC today (12 AM MT)
-    next.setUTCHours(7, 0, 0, 0);
-  } else if (currentUTCHour < 19) {
-    // Next is 7 PM UTC today (12 PM MT)
-    next.setUTCHours(19, 0, 0, 0);
-  } else {
-    // Next is 7 AM UTC tomorrow (12 AM MT)
-    next.setUTCDate(next.getUTCDate() + 1);
-    next.setUTCHours(7, 0, 0, 0);
+  // MST (UTC-7): 6PM=01:00, 12AM=07:00, 6AM=13:00, 12PM=19:00
+  const updateHours = [1, 7, 13, 19];
+  for (const hour of updateHours) {
+    if (currentUTCHour < hour) {
+      next.setUTCHours(hour, 0, 0, 0);
+      return next;
+    }
   }
+  // Next is 1 AM UTC tomorrow (6 PM MT)
+  next.setUTCDate(next.getUTCDate() + 1);
+  next.setUTCHours(1, 0, 0, 0);
 
   return next;
 }
 
 async function start() {
   console.log('🚀 SOL Price Bot Starting...');
-  console.log(`⏱️  Check interval: ${CONFIG.CHECK_INTERVAL / 1000}s`);
-  console.log(`💵 Alert threshold: $${CONFIG.PRICE_THRESHOLD}`);
-  console.log(`📊 Status updates: 12 PM & 12 AM Mountain Time`);
+  console.log(`📊 Status updates: 6PM, 12AM, 6AM, 12PM Mountain Time`);
   console.log('─'.repeat(50));
 
   // Validate webhook URL
@@ -299,16 +297,10 @@ async function start() {
     process.exit(1);
   }
 
-  // Initial setup
-  lastStatusUpdate = Date.now();
-
-  // Price checking disabled - only 12-hour status updates
-
-  // Schedule first update at next 8 AM or 8 PM Mountain
   const nextUpdate = getNextMountainUpdate();
   const msUntilNext = nextUpdate - new Date();
 
-  console.log(`📅 Next status update: ${nextUpdate.toUTCString()} (12 PM/AM Mountain)`);
+  console.log(`📅 Next status update: ${nextUpdate.toUTCString()}`);
 
   setTimeout(async () => {
     const price = await getSOLPrice();
@@ -316,13 +308,13 @@ async function start() {
       await sendStatusUpdate(price);
     }
 
-    // After first update, schedule every 12 hours
+    // Repeat every 6 hours
     setInterval(async () => {
       const price = await getSOLPrice();
       if (price) {
         await sendStatusUpdate(price);
       }
-    }, 12 * 60 * 60 * 1000);
+    }, 6 * 60 * 60 * 1000);
   }, msUntilNext);
 
   console.log('✅ Bot running!');
