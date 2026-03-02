@@ -180,11 +180,17 @@ async function sendStatusUpdate(price) {
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';
 
-    const chartData = validPrices.map(p => p.toFixed(4)).join(',');
+    // Normalize to 0-100 range so chart fills the area
+    const minPrice = Math.min(...validPrices);
+    const maxPrice = Math.max(...validPrices);
+    const range = maxPrice - minPrice || 0.01;
+    const scaledData = validPrices.map(p => ((p - minPrice) / range * 100).toFixed(1));
+
+    const chartData = scaledData.join(',');
     const lineColor = priceChange >= 0 ? '4caf50' : 'FF1919';
 
-    const titleText = `$${currentPrice.toFixed(4)}|${arrow} ${Math.abs(percentChange)}%`;
-    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=a:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,70,1`;
+    const titleText = `$${currentPrice.toFixed(4)}                    |                    ${arrow} ${Math.abs(percentChange)}%`;
+    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=t:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,70,1`;
 
     const message = {
       username: 'Copper-bot',

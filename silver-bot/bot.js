@@ -160,8 +160,19 @@ async function sendDiscordAlert(price, level, direction) {
 
 async function sendStatusUpdate(price) {
   try {
-    // Fetch 24 hours of real silver price data (5-minute intervals)
-    const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=5m&range=1d');
+    // Fetch 24 hours of real silver price data (5-minute intervals) with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=5m&range=1d', {
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`Yahoo API returned ${response.status}`);
+    }
+
     const data = await response.json();
 
     const timestamps = data.chart?.result?.[0]?.timestamp || [];
@@ -188,23 +199,17 @@ async function sendStatusUpdate(price) {
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';
 
-    // Scale real price data for chart with detail variations like SOL bot
+    // Normalize to 0-100 range so chart fills the area
     const minPrice = Math.min(...validPrices);
     const maxPrice = Math.max(...validPrices);
-    const range = maxPrice - minPrice || 1; // Prevent division by zero
-
-    const scaledData = validPrices.map((p, i) => {
-      const normalized = (p - minPrice) / range;
-      const variation = Math.sin(i * 0.18) * 18 + Math.sin(i * 0.45) * 12 + Math.sin(i * 0.1) * 9 + Math.sin(i * 0.7) * 6;
-      const scaled = 5 + (normalized * 90) + variation;
-      return Math.max(0, Math.min(100, scaled)).toFixed(1);
-    });
+    const range = maxPrice - minPrice || 0.01;
+    const scaledData = validPrices.map(p => ((p - minPrice) / range * 100).toFixed(1));
 
     const chartData = scaledData.join(',');
     const lineColor = priceChange >= 0 ? '4caf50' : 'FF1919';
 
     const titleText = `$${currentPrice.toFixed(2)}                    |                    ${arrow} ${Math.abs(percentChange)}%`;
-    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=t:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,56,1`;
+    const chartUrl = `https://image-charts.com/chart?cht=ls&chd=t:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,70,1`;
 
     const message = {
       embeds: [{
@@ -306,16 +311,24 @@ async function start() {
   console.log(`📅 Next status update: ${nextUpdate.toUTCString()} (12 PM/AM Mountain)`);
 
   setTimeout(async () => {
-    const price = await getSilverPrice();
-    if (price) {
-      await sendStatusUpdate(price);
+    try {
+      const price = await getSilverPrice();
+      if (price) {
+        await sendStatusUpdate(price);
+      }
+    } catch (error) {
+      console.error('Error in first update:', error.message);
     }
 
     // After first update, schedule every 12 hours
     setInterval(async () => {
-      const price = await getSilverPrice();
-      if (price) {
-        await sendStatusUpdate(price);
+      try {
+        const price = await getSilverPrice();
+        if (price) {
+          await sendStatusUpdate(price);
+        }
+      } catch (error) {
+        console.error('Error in scheduled update:', error.message);
       }
     }, 12 * 60 * 60 * 1000);
   }, msUntilNext);
