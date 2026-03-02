@@ -101,13 +101,13 @@ async function sendAll() {
   await sendYahooFinance(
     'SILVER',
     'SI=F',
-    'https://discord.com/api/webhooks/1469437485527035974/wCUBX-C3rHZWqWH-rvJSHjfLlf_y61j_yPFFDZmM2d3nvTt8_6eZF6WwwW62SRgqwRD3'
+    'https://discord.com/api/webhooks/1469566250886631464/F8otEAu15441vJVyb8tGoPsnRtawsPq5Qdvr5Femqwg5PKSlx3bzG-16k1UqqiD5qpbs'
   );
 
   await sendYahooFinance(
     'COPPER',
     'HG=F',
-    'https://discord.com/api/webhooks/1469437551608696904/98AkXDJ9PW3WmwBPgc8o7NZGkaBq98z14-OO9iATbcmj_xFDBFQrVo-L6z-H0xTQKTDt'
+    'https://discord.com/api/webhooks/1478085027123433523/_jpkms0FBa7W7klwYeo85ZCsrVyIHTg1Mp_FNDtiUxrlNc-_zRS89Icths_9FzvALVcQ'
   );
 
   console.log('\n✅ All messages sent!');

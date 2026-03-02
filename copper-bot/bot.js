@@ -193,7 +193,6 @@ async function sendStatusUpdate(price) {
     const chartUrl = `https://image-charts.com/chart?cht=ls&chd=t:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,70,1`;
 
     const message = {
-      username: 'Copper-bot',
       embeds: [{
         image: { url: chartUrl },
         color: 0x0E0E0E
