@@ -130,7 +130,7 @@ async function sendDiscordAlert(price, level, direction) {
 
   const lineColorHex = direction === 'up' ? '4caf50' : 'f46a6a';
   const chartData = dataPoints.join(',');
-  const chartUrl = \`https://image-charts.com/chart?cht=ls&chd=a:\${chartData}&chs=700x180&chco=\${lineColorHex}&chxt=&chf=bg,s,000000&chls=2.5&chm=\`;
+  const chartUrl = `https://image-charts.com/chart?cht=ls&chd=a:${chartData}&chs=700x180&chco=${lineColorHex}&chxt=&chf=bg,s,000000&chls=2.5&chm=`;
 
   const message = {
     embeds: [{
