@@ -1,0 +1,25 @@
+{
+  "name": "sol-price-bot",
+  "version": "1.0.0",
+  "description": "Discord bot that alerts when Solana price crosses $5 thresholds",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "start:env": "node bot-env.js",
+    "dev": "nodemon bot.js",
+    "dev:env": "nodemon bot-env.js"
+  },
+  "keywords": ["solana", "discord", "bot", "crypto", "price-tracker"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

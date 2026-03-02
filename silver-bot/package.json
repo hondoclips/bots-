@@ -1,0 +1,18 @@
+{
+  "name": "silver-price-bot",
+  "version": "1.0.0",
+  "description": "Discord bot that alerts when Silver price crosses $2 thresholds",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "keywords": ["silver", "discord", "bot", "precious-metals", "price-tracker"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
