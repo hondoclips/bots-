@@ -192,12 +192,8 @@ async function sendStatusUpdate(price) {
 
     const candles = ohlcData.result.SOLUSD.slice(-288); // Last 288 5-min candles = 24h
 
-    // Interleave high and low of each candle for more up/down movement
-    const prices = [];
-    candles.forEach(c => {
-      prices.push(parseFloat(c[2])); // high
-      prices.push(parseFloat(c[3])); // low
-    });
+    // Use midpoint of high/low per candle - more movement than close, less chunky than H/L interleave
+    const prices = candles.map(c => (parseFloat(c[2]) + parseFloat(c[3])) / 2);
 
     // Calculate 24h change using first and last close
     const price24hAgo = parseFloat(candles[0][4]);

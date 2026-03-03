@@ -9,11 +9,7 @@ async function sendSOL() {
     const ohlcResponse = await fetch('https://api.kraken.com/0/public/OHLC?pair=SOLUSD&interval=5');
     const ohlcData = await ohlcResponse.json();
     const candles = ohlcData.result.SOLUSD.slice(-288);
-    const prices = [];
-    candles.forEach(c => {
-      prices.push(parseFloat(c[2])); // high
-      prices.push(parseFloat(c[3])); // low
-    });
+    const prices = candles.map(c => (parseFloat(c[2]) + parseFloat(c[3])) / 2);
 
     const price24hAgo = parseFloat(candles[0][4]);
     const priceChange = price - price24hAgo;
@@ -59,12 +55,11 @@ async function sendYahooFinance(name, ticker, webhook) {
     const lows = result.indicators.quote[0].low;
     const closes = result.indicators.quote[0].close;
 
-    // Interleave high and low of each candle for more up/down movement
+    // Use midpoint of high/low per candle - more movement than close, less chunky than H/L interleave
     const validPrices = [];
     for (let i = 0; i < closes.length; i++) {
       if (highs[i] != null && lows[i] != null) {
-        validPrices.push(highs[i]);
-        validPrices.push(lows[i]);
+        validPrices.push((highs[i] + lows[i]) / 2);
       }
     }
 

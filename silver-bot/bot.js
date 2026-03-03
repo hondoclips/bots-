@@ -179,12 +179,11 @@ async function sendStatusUpdate(price) {
     const lows = data.chart?.result?.[0]?.indicators?.quote?.[0]?.low || [];
     const closes = data.chart?.result?.[0]?.indicators?.quote?.[0]?.close || [];
 
-    // Interleave high and low of each candle for more up/down movement
+    // Use midpoint of high/low per candle - more movement than close, less chunky than H/L interleave
     const validPrices = [];
     for (let i = 0; i < closes.length; i++) {
       if (highs[i] != null && lows[i] != null) {
-        validPrices.push(highs[i]);
-        validPrices.push(lows[i]);
+        validPrices.push((highs[i] + lows[i]) / 2);
       }
     }
 
