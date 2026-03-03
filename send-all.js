@@ -31,7 +31,7 @@ async function sendSOL() {
     const titleText = `$${price.toFixed(2)}                    |                    ${arrow} ${Math.abs(percentChange)}%`;
     const chartUrl = `https://image-charts.com/chart?cht=ls&chd=t:${chartData}&chs=998x340&chco=${lineColor}&chf=bg,s,0D0D0D&chls=3&chtt=${encodeURIComponent(titleText)}&chts=FFFFFF,31&chma=1,1,70,1`;
 
-    await fetch('https://discord.com/api/webhooks/1469437412299112662/TP1qBSLrmjEiMVRF2-yFxFHBbIJE8wH9tHQsTprTsWKDBxLm0nYixPRTFseJuUjw5Fz2', {
+    await fetch('https://discord.com/api/webhooks/1478440281291620372/kTf-wras4JLAb0xQChIg7XLIx9JKRiL0_Nqu6lAkoeszwBxwaRCUCcRONHcpG86aTPcW', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

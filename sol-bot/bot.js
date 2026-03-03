@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 
 // ============ CONFIGURATION ============
 const CONFIG = {
-  DISCORD_WEBHOOK_URL: 'https://discord.com/api/webhooks/1469437412299112662/TP1qBSLrmjEiMVRF2-yFxFHBbIJE8wH9tHQsTprTsWKDBxLm0nYixPRTFseJuUjw5Fz2',
+  DISCORD_WEBHOOK_URL: 'https://discord.com/api/webhooks/1478440281291620372/kTf-wras4JLAb0xQChIg7XLIx9JKRiL0_Nqu6lAkoeszwBxwaRCUCcRONHcpG86aTPcW',
   CHECK_INTERVAL: 180000, // 180 seconds (3 minutes) - slower to avoid rate limits
   PRICE_THRESHOLD: 5, // Alert every $5
   STATUS_UPDATE_INTERVAL: 6 * 60 * 60 * 1000, // 6 hours
@@ -274,26 +274,19 @@ async function checkPrice() {
   lastPrice = price;
 }
 
-function getNextMountainUpdate() {
-  const now = new Date();
-  const next = new Date(now);
+function getMountainHour() {
+  return parseInt(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Denver',
+    hour: 'numeric',
+    hour12: false
+  }).format(new Date())) % 24;
+}
 
-  // Mountain Time = UTC-7, so 12 PM MT = 19:00 UTC, 12 AM MT = 07:00 UTC
-  const currentUTCHour = now.getUTCHours();
-
-  // MDT (UTC-6): 6PM=00:00, 12AM=06:00, 6AM=12:00, 12PM=18:00
-  const updateHours = [0, 6, 12, 18];
-  for (const hour of updateHours) {
-    if (currentUTCHour < hour) {
-      next.setUTCHours(hour, 0, 0, 0);
-      return next;
-    }
-  }
-  // Next is midnight UTC tomorrow (6 PM MT)
-  next.setUTCDate(next.getUTCDate() + 1);
-  next.setUTCHours(0, 0, 0, 0);
-
-  return next;
+function getMountainMinute() {
+  return parseInt(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Denver',
+    minute: 'numeric'
+  }).format(new Date()));
 }
 
 async function start() {
@@ -301,33 +294,28 @@ async function start() {
   console.log(`📊 Status updates: 6PM, 12AM, 6AM, 12PM Mountain Time`);
   console.log('─'.repeat(50));
 
-  // Validate webhook URL
   if (CONFIG.DISCORD_WEBHOOK_URL === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
     console.error('❌ ERROR: Please set your Discord webhook URL in the CONFIG section');
     process.exit(1);
   }
 
-  const nextUpdate = getNextMountainUpdate();
-  const msUntilNext = nextUpdate - new Date();
+  const UPDATE_HOURS = new Set([0, 6, 12, 18]); // midnight, 6AM, noon, 6PM Mountain
+  let lastSentHour = -1;
 
-  console.log(`📅 Next status update: ${nextUpdate.toUTCString()}`);
+  // Check every minute — fire within first 2 min of each scheduled hour
+  setInterval(async () => {
+    const hour = getMountainHour();
+    const minute = getMountainMinute();
 
-  setTimeout(async () => {
-    const price = await getSOLPrice();
-    if (price) {
-      await sendStatusUpdate(price);
-    }
-
-    // Repeat every 6 hours
-    setInterval(async () => {
+    if (UPDATE_HOURS.has(hour) && minute < 2 && lastSentHour !== hour) {
+      lastSentHour = hour;
+      console.log(`📊 Sending scheduled update (${hour}:00 Mountain)`);
       const price = await getSOLPrice();
-      if (price) {
-        await sendStatusUpdate(price);
-      }
-    }, 6 * 60 * 60 * 1000);
-  }, msUntilNext);
+      if (price) await sendStatusUpdate(price);
+    }
+  }, 60 * 1000);
 
-  console.log('✅ Bot running!');
+  console.log('✅ Bot running! Checks every minute for scheduled updates.');
 }
 
 // ============ START BOT ============
