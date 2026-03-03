@@ -191,10 +191,16 @@ async function sendStatusUpdate(price) {
     const ohlcData = await ohlcResponse.json();
 
     const candles = ohlcData.result.SOLUSD.slice(-288); // Last 288 5-min candles = 24h
-    const prices = candles.map(c => parseFloat(c[4])); // close prices
 
-    // Calculate 24h change
-    const price24hAgo = prices[0];
+    // Interleave high and low of each candle for more up/down movement
+    const prices = [];
+    candles.forEach(c => {
+      prices.push(parseFloat(c[2])); // high
+      prices.push(parseFloat(c[3])); // low
+    });
+
+    // Calculate 24h change using first and last close
+    const price24hAgo = parseFloat(candles[0][4]);
     const priceChange = price - price24hAgo;
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';

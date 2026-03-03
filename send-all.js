@@ -9,9 +9,13 @@ async function sendSOL() {
     const ohlcResponse = await fetch('https://api.kraken.com/0/public/OHLC?pair=SOLUSD&interval=5');
     const ohlcData = await ohlcResponse.json();
     const candles = ohlcData.result.SOLUSD.slice(-288);
-    const prices = candles.map(c => parseFloat(c[4]).toFixed(2));
+    const prices = [];
+    candles.forEach(c => {
+      prices.push(parseFloat(c[2])); // high
+      prices.push(parseFloat(c[3])); // low
+    });
 
-    const price24hAgo = parseFloat(prices[0]);
+    const price24hAgo = parseFloat(candles[0][4]);
     const priceChange = price - price24hAgo;
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';
@@ -51,17 +55,24 @@ async function sendYahooFinance(name, ticker, webhook) {
 
     const result = data.chart.result[0];
     const currentPrice = result.meta.regularMarketPrice;
-    const timestamps = result.timestamp;
-    const quotes = result.indicators.quote[0].close;
+    const highs = result.indicators.quote[0].high;
+    const lows = result.indicators.quote[0].low;
+    const closes = result.indicators.quote[0].close;
 
-    // Filter out null values and get valid prices
-    const validPrices = quotes.filter(p => p !== null).map(p => p.toFixed(2));
+    // Interleave high and low of each candle for more up/down movement
+    const validPrices = [];
+    for (let i = 0; i < closes.length; i++) {
+      if (highs[i] != null && lows[i] != null) {
+        validPrices.push(highs[i]);
+        validPrices.push(lows[i]);
+      }
+    }
 
     if (validPrices.length === 0) {
       throw new Error('No valid price data');
     }
 
-    const price24hAgo = parseFloat(validPrices[0]);
+    const price24hAgo = closes.filter(p => p != null)[0];
     const priceChange = currentPrice - price24hAgo;
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';

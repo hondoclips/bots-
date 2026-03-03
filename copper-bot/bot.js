@@ -162,20 +162,21 @@ async function sendStatusUpdate(price) {
     const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HG=F?interval=5m&range=1d');
     const data = await response.json();
 
-    const timestamps = data.chart?.result?.[0]?.timestamp || [];
-    const prices = data.chart?.result?.[0]?.indicators?.quote?.[0]?.close || [];
+    const highs = data.chart?.result?.[0]?.indicators?.quote?.[0]?.high || [];
+    const lows = data.chart?.result?.[0]?.indicators?.quote?.[0]?.low || [];
+    const closes = data.chart?.result?.[0]?.indicators?.quote?.[0]?.close || [];
 
-    // Filter out null values and get valid prices
+    // Interleave high and low of each candle for more up/down movement
     const validPrices = [];
-    for (let i = 0; i < prices.length; i++) {
-      if (prices[i] !== null) {
-        validPrices.push(prices[i]);
+    for (let i = 0; i < closes.length; i++) {
+      if (highs[i] !== null && lows[i] !== null) {
+        validPrices.push(highs[i]);
+        validPrices.push(lows[i]);
       }
     }
 
-    // Use the most recent price from the data (more current than regularMarketPrice)
-    const currentPrice = validPrices[validPrices.length - 1] || price;
-    const price24hAgo = validPrices[0] || currentPrice;
+    const currentPrice = closes.filter(p => p !== null).slice(-1)[0] || price;
+    const price24hAgo = closes.filter(p => p !== null)[0] || currentPrice;
     const priceChange = currentPrice - price24hAgo;
     const percentChange = ((priceChange / price24hAgo) * 100).toFixed(2);
     const arrow = priceChange >= 0 ? '↗' : '↘';
