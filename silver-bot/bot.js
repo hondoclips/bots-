@@ -275,17 +275,17 @@ function getNextMountainUpdate() {
   // Mountain Time = UTC-7, so 12 PM MT = 19:00 UTC, 12 AM MT = 07:00 UTC
   const currentUTCHour = now.getUTCHours();
 
-  // MST (UTC-7): 6PM=01:00, 12AM=07:00, 6AM=13:00, 12PM=19:00
-  const updateHours = [1, 7, 13, 19];
+  // MDT (UTC-6): 6PM=00:00, 12AM=06:00, 6AM=12:00, 12PM=18:00
+  const updateHours = [0, 6, 12, 18];
   for (const hour of updateHours) {
     if (currentUTCHour < hour) {
       next.setUTCHours(hour, 0, 0, 0);
       return next;
     }
   }
-  // Next is 1 AM UTC tomorrow (6 PM MT)
+  // Next is midnight UTC tomorrow (6 PM MT)
   next.setUTCDate(next.getUTCDate() + 1);
-  next.setUTCHours(1, 0, 0, 0);
+  next.setUTCHours(0, 0, 0, 0);
 
   return next;
 }
