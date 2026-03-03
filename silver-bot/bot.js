@@ -164,7 +164,7 @@ async function sendStatusUpdate(price) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=5m&range=1d', {
+    const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=5m&range=12h', {
       signal: controller.signal
     });
     clearTimeout(timeout);

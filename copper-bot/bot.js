@@ -159,7 +159,7 @@ async function sendDiscordAlert(price, level, direction) {
 async function sendStatusUpdate(price) {
   try {
     // Fetch 24 hours of real silver price data (5-minute intervals)
-    const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HG=F?interval=5m&range=1d');
+    const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HG=F?interval=5m&range=12h');
     const data = await response.json();
 
     const highs = data.chart?.result?.[0]?.indicators?.quote?.[0]?.high || [];

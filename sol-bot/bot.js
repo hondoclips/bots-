@@ -190,7 +190,7 @@ async function sendStatusUpdate(price) {
     const ohlcResponse = await fetch('https://api.kraken.com/0/public/OHLC?pair=SOLUSD&interval=5');
     const ohlcData = await ohlcResponse.json();
 
-    const candles = ohlcData.result.SOLUSD.slice(-288); // Last 288 5-min candles = 24h
+    const candles = ohlcData.result.SOLUSD.slice(-144); // Last 144 5-min candles = 12h
 
     // Interleave H/L then smooth with 5-point moving average
     const rawPrices = [];

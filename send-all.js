@@ -8,7 +8,7 @@ async function sendSOL() {
 
     const ohlcResponse = await fetch('https://api.kraken.com/0/public/OHLC?pair=SOLUSD&interval=5');
     const ohlcData = await ohlcResponse.json();
-    const candles = ohlcData.result.SOLUSD.slice(-288);
+    const candles = ohlcData.result.SOLUSD.slice(-144);
     const rawP = [];
     candles.forEach(c => { rawP.push(parseFloat(c[2])); rawP.push(parseFloat(c[3])); });
     const prices = rawP.map((_, i) => {
@@ -51,7 +51,7 @@ async function sendSOL() {
 async function sendYahooFinance(name, ticker, webhook) {
   try {
     // Get 24h data
-    const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=5m&range=1d`);
+    const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=5m&range=12h`);
     const data = await response.json();
 
     const result = data.chart.result[0];
