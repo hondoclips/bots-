@@ -179,13 +179,18 @@ async function sendStatusUpdate(price) {
     const lows = data.chart?.result?.[0]?.indicators?.quote?.[0]?.low || [];
     const closes = data.chart?.result?.[0]?.indicators?.quote?.[0]?.close || [];
 
-    // Use midpoint of high/low per candle - more movement than close, less chunky than H/L interleave
-    const validPrices = [];
+    // Interleave H/L then smooth with 5-point moving average
+    const rawPrices = [];
     for (let i = 0; i < closes.length; i++) {
       if (highs[i] != null && lows[i] != null) {
-        validPrices.push((highs[i] + lows[i]) / 2);
+        rawPrices.push(highs[i]);
+        rawPrices.push(lows[i]);
       }
     }
+    const validPrices = rawPrices.map((_, i) => {
+      const slice = rawPrices.slice(Math.max(0, i - 2), Math.min(rawPrices.length, i + 3));
+      return slice.reduce((a, b) => a + b, 0) / slice.length;
+    });
 
     if (validPrices.length < 10) {
       console.log('⚠️  Not enough price data, skipping update');

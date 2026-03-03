@@ -9,7 +9,12 @@ async function sendSOL() {
     const ohlcResponse = await fetch('https://api.kraken.com/0/public/OHLC?pair=SOLUSD&interval=5');
     const ohlcData = await ohlcResponse.json();
     const candles = ohlcData.result.SOLUSD.slice(-288);
-    const prices = candles.map(c => (parseFloat(c[2]) + parseFloat(c[3])) / 2);
+    const rawP = [];
+    candles.forEach(c => { rawP.push(parseFloat(c[2])); rawP.push(parseFloat(c[3])); });
+    const prices = rawP.map((_, i) => {
+      const slice = rawP.slice(Math.max(0, i - 2), Math.min(rawP.length, i + 3));
+      return slice.reduce((a, b) => a + b, 0) / slice.length;
+    });
 
     const price24hAgo = parseFloat(candles[0][4]);
     const priceChange = price - price24hAgo;
@@ -55,13 +60,18 @@ async function sendYahooFinance(name, ticker, webhook) {
     const lows = result.indicators.quote[0].low;
     const closes = result.indicators.quote[0].close;
 
-    // Use midpoint of high/low per candle - more movement than close, less chunky than H/L interleave
-    const validPrices = [];
+    // Interleave H/L then smooth with 5-point moving average
+    const rawPrices = [];
     for (let i = 0; i < closes.length; i++) {
       if (highs[i] != null && lows[i] != null) {
-        validPrices.push((highs[i] + lows[i]) / 2);
+        rawPrices.push(highs[i]);
+        rawPrices.push(lows[i]);
       }
     }
+    const validPrices = rawPrices.map((_, i) => {
+      const slice = rawPrices.slice(Math.max(0, i - 2), Math.min(rawPrices.length, i + 3));
+      return slice.reduce((a, b) => a + b, 0) / slice.length;
+    });
 
     if (validPrices.length === 0) {
       throw new Error('No valid price data');
