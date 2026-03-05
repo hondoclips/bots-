@@ -274,19 +274,29 @@ async function checkPrice() {
   lastPrice = price;
 }
 
-function getMountainHour() {
-  return parseInt(new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Denver',
-    hour: 'numeric',
-    hour12: false
-  }).format(new Date())) % 24;
-}
+function getMountainTime() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
 
-function getMountainMinute() {
-  return parseInt(new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Denver',
-    minute: 'numeric'
-  }).format(new Date()));
+  // Find second Sunday of March (DST start) at 9:00 UTC (2 AM MST)
+  let marchSundays = 0, dstStart = null;
+  for (let d = 1; d <= 31; d++) {
+    if (new Date(Date.UTC(year, 2, d)).getUTCDay() === 0) {
+      marchSundays++;
+      if (marchSundays === 2) { dstStart = new Date(Date.UTC(year, 2, d, 9)); break; }
+    }
+  }
+  // Find first Sunday of November (DST end) at 8:00 UTC (2 AM MDT)
+  let novStart = null;
+  for (let d = 1; d <= 30; d++) {
+    if (new Date(Date.UTC(year, 10, d)).getUTCDay() === 0) {
+      novStart = new Date(Date.UTC(year, 10, d, 8)); break;
+    }
+  }
+
+  const offset = (now >= dstStart && now < novStart) ? -6 : -7; // MDT or MST
+  const mt = new Date(now.getTime() + offset * 3600000);
+  return { hour: mt.getUTCHours(), minute: mt.getUTCMinutes() };
 }
 
 async function start() {
@@ -304,8 +314,7 @@ async function start() {
 
   // Check every minute — fire within first 2 min of each scheduled hour
   setInterval(async () => {
-    const hour = getMountainHour();
-    const minute = getMountainMinute();
+    const { hour, minute } = getMountainTime();
 
     if (UPDATE_HOURS.has(hour) && minute < 2 && lastSentHour !== hour) {
       lastSentHour = hour;
