@@ -1,0 +1,16 @@
+{
+  "name": "hype-price-bot",
+  "version": "1.0.0",
+  "description": "Discord bot that posts HYPE price updates every 6 hours",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
